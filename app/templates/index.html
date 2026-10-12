@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080d19">
+    <title>CyberShield | Security Operations Center</title>
+
+    <style>
+        :root {
+            --bg: #080d19;
+            --sidebar: #0c1322;
+            --panel: #111b2d;
+            --panel-hover: #162239;
+            --border: #243149;
+            --text: #e7edf8;
+            --muted: #8b9bb5;
+            --blue: #4d8dff;
+            --cyan: #42d9e8;
+            --green: #38d996;
+            --yellow: #f7bd4a;
+            --red: #ff647c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        button, input, textarea, select { font: inherit; }
+        button { cursor: pointer; }
+
+        button:focus-visible, input:focus-visible,
+        textarea:focus-visible, select:focus-visible {
+            outline: 2px solid var(--cyan);
+            outline-offset: 3px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 235px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            padding: 25px 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px 30px;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            color: white;
+            font-size: 22px;
+            background: linear-gradient(135deg, #367aff, #26c8db);
+            box-shadow: 0 0 25px #367aff30;
+        }
+
+        .brand h1 {
+            font-size: 18px;
+            margin: 0 0 5px;
+            letter-spacing: .5px;
+        }
+
+        .brand p { margin: 0; color: var(--muted); font-size: 11px; }
+
+        .nav-label {
+            margin: 10px 10px 12px;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 12px;
+            margin: 5px 0;
+            border-radius: 9px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: #1b2e4c;
+            color: #80b2ff;
+            border: 1px solid #29476e;
+        }
+
+        .nav-icon { width: 21px; text-align: center; font-size: 17px; }
+
+        .sidebar-bottom {
+            margin-top: 42px;
+            padding: 15px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #111b2a;
+        }
+
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 10px #38d99670;
+        }
+
+        .sidebar-bottom p {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .main { min-width: 0; }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 19px 30px;
+            background: #0c1320;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .breadcrumb { color: var(--muted); font-size: 12px; }
+        .breadcrumb strong { color: var(--text); }
+
+        .top-right { display: flex; align-items: center; gap: 12px; }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .refresh-btn, .secondary-btn, .primary-btn {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text);
+            background: var(--panel);
+        }
+
+        .refresh-btn:hover, .secondary-btn:hover { background: var(--panel-hover); }
+
+        .primary-btn {
+            border-color: var(--blue);
+            background: var(--blue);
+            color: white;
+            font-weight: 600;
+        }
+
+        .primary-btn:hover { background: #3678ec; }
+
+        .content { max-width: 1550px; margin: auto; padding: 30px; }
+
+        .page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .page-heading h2 { margin: 0 0 8px; font-size: 27px; letter-spacing: -.5px; }
+        .page-heading p { margin: 0; color: var(--muted); line-height: 1.6; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            padding: 21px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: linear-gradient(145deg, #131e31, #0f1828);
+        }
+
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            right: -35px;
+            top: -45px;
+            border-radius: 50%;
+            background: var(--glow, #4d8dff);
+            opacity: .08;
+            filter: blur(15px);
+        }
+
+        .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .stat-label { color: var(--muted); font-size: 12px; }
+
+        .stat-icon {
+            display: grid;
+            place-items: center;
+            width: 35px;
+            height: 35px;
+            border-radius: 9px;
+            background: #243552;
+            color: var(--glow, #80b2ff);
+            font-size: 17px;
+        }
+
+        .stat-value { margin-top: 19px; font-size: 31px; font-weight: 700; letter-spacing: -1px; }
+        .stat-note { margin-top: 7px; color: var(--muted); font-size: 11px; }
+
+        .panel {
+            margin-bottom: 22px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--panel);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 21px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-header h3 { margin: 0 0 6px; font-size: 16px; }
+        .panel-header p { margin: 0; color: var(--muted); font-size: 12px; }
+
+        /* Incident Risk Distribution chart */
+        .risk-chart-label {
+            flex-shrink: 0;
+            padding: 6px 9px;
+            border: 1px solid #245545;
+            border-radius: 6px;
+            background: #123328;
+            color: #62e6b1;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .risk-chart-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 1fr);
+            align-items: center;
+            gap: 22px;
+            padding: 24px;
+        }
+
+        .risk-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 330px;
+            height: 280px;
+            margin: 0 auto;
+        }
+
+        .risk-chart-summary {
+            display: grid;
+            gap: 12px;
+        }
+
+        .risk-summary-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 14px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: #0d1626;
+        }
+
+        .risk-summary-label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+
+        .risk-legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .risk-summary-value { color: var(--text); font-size: 15px; font-weight: 700; }
+        .risk-chart-fallback { color: var(--muted); text-align: center; font-size: 12px; }
+
+        .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 17px 22px; }
+        .search-box { flex: 1; min-width: 180px; }
+
+        .search-box input, .filters select, .form-control {
+            width: 100%;
+            padding: 11px 12px;
+            color: var(--text);
+            background: #0b1322;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .filters select { width: auto; min-width: 145px; }
+        input::placeholder, textarea::placeholder { color: #71819b; }
+
+        .table-wrap { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+
+        th {
+            padding: 13px 18px;
+            background: #0e1727;
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        td { padding: 16px 18px; border-top: 1px solid #202c40; font-size: 12px; }
+        tbody tr:hover { background: #162239; }
+        .incident-title { font-weight: 600; color: #e4edfc; }
+        .incident-id { color: #86b2ff; font-weight: 600; }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .badge.low { background: #123b32; color: #5de0ae; }
+        .badge.medium { background: #44361c; color: #ffd16d; }
+        .badge.high, .badge.critical { background: #482330; color: #ff8497; }
+        .badge.unknown { background: #293449; color: #b8c5da; }
+        .badge.open { background: #17324c; color: #86c8ff; }
+
+        .view-btn {
+            padding: 7px 10px;
+            border: 1px solid #304663;
+            border-radius: 6px;
+            color: #9cc5ff;
+            background: #14243a;
+        }
+
+        .view-btn:hover { background: #203a5d; }
+        .empty-state { padding: 35px 15px; text-align: center; color: var(--muted); }
+        .form-panel { display: none; }
+        .form-panel.visible { display: block; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 17px;
+            padding: 22px;
+        }
+
+        .field { display: flex; flex-direction: column; gap: 8px; }
+        .field.full { grid-column: 1 / -1; }
+        .field label { color: #c9d5e8; font-size: 12px; font-weight: 600; }
+        textarea.form-control { min-height: 115px; resize: vertical; }
+
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 0 22px 22px; }
+        .primary-btn:disabled { cursor: wait; opacity: .6; }
+
+        .notice { margin: 0 22px 18px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+        .notice.error { color: #ff8497; }
+        .notice.success { color: var(--green); }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #030712c9;
+        }
+
+        .modal-backdrop.visible { display: flex; }
+
+        .modal {
+            width: 100%;
+            max-width: 680px;
+            max-height: 85vh;
+            overflow-y: auto;
+            background: #111b2d;
+            border: 1px solid #34445e;
+            border-radius: 14px;
+            box-shadow: 0 25px 80px #0008;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h3 { margin: 0 0 7px; font-size: 18px; }
+        .modal-header p { margin: 0; color: var(--muted); font-size: 12px; }
+        .close-btn { border: 0; color: var(--muted); background: transparent; font-size: 25px; }
+        .detail-content { padding: 22px; }
+        .detail-block { margin-bottom: 22px; }
+
+        .detail-block h4 {
+            margin: 0 0 10px;
+            color: #8eb8ff;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-block p, .detail-block li {
+            color: #d0d9e9;
+            font-size: 13px;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        .detail-block ul { padding-left: 20px; }
+        footer { padding: 10px 0 25px; text-align: center; color: #65758f; font-size: 11px; }
+
+        @media (max-width: 1100px) {
+            .layout { grid-template-columns: 190px minmax(0, 1fr); }
+            .content { padding: 22px; }
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 720px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { padding: 14px; border-right: 0; border-bottom: 1px solid var(--border); }
+            .brand { padding-bottom: 12px; }
+            .nav-label, .sidebar-bottom { display: none; }
+            .nav-item { display: inline-flex; padding: 9px 11px; margin-right: 5px; }
+            .topbar { padding: 14px 18px; }
+            .content { padding: 18px 12px; }
+            .page-heading { align-items: flex-start; flex-direction: column; }
+            .page-heading h2 { font-size: 23px; }
+            .panel-header { padding: 17px; }
+            .filters { padding: 14px; }
+            .filters select { flex: 1; }
+            .form-grid { grid-template-columns: 1fr; padding: 17px; }
+            .field.full { grid-column: auto; }
+            .form-actions { padding: 0 17px 17px; }
+            .risk-chart-body { grid-template-columns: 1fr; padding: 18px; }
+            .risk-chart-container { height: 250px; }
+            .risk-chart-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 420px) {
+            .stats { grid-template-columns: 1fr 1fr; gap: 9px; }
+            .stat-card { padding: 14px; }
+            .stat-value { font-size: 25px; }
+            .stat-label { font-size: 11px; }
+            .live-badge { display: none; }
+            .topbar { gap: 8px; }
+            .risk-chart-summary { grid-template-columns: 1fr; }
+            .risk-chart-label { font-size: 9px; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">⌘</div>
+            <div>
+                <h1>CyberShield</h1>
+                <p>SECURITY OPERATIONS</p>
+            </div>
+        </div>
+
+        <div class="nav-label">WORKSPACE</div>
+        <div class="nav-item active"><span class="nav-icon">▦</span>Overview</div>
+        <div class="nav-item"><span class="nav-icon">◈</span>Incident Monitor</div>
+        <div class="nav-item"><span class="nav-icon">◎</span>AI Analysis</div>
+
+        <div class="sidebar-bottom">
+            <div class="status-line"><span class="dot"></span>Application Online</div>
+            <p>Incident monitoring is ready. AI findings should be reviewed by a human analyst.</p>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="breadcrumb">Workspace / <strong>Overview</strong></div>
+            <div class="top-right">
+                <div class="live-badge"><span class="dot"></span>API Dashboard</div>
+                <button class="refresh-btn" id="refreshBtn" type="button">↻ Refresh</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <section class="page-heading">
+                <div>
+                    <h2>Security Overview</h2>
+                    <p>Monitor incidents, assess threats, and review AI-generated analysis.</p>
+                </div>
+                <button class="primary-btn" id="showFormBtn" type="button">+ New Incident</button>
+            </section>
+
+            <section class="stats">
+                <div class="stat-card" style="--glow:#4d8dff">
+                    <div class="stat-top"><span class="stat-label">Total Incidents</span><span class="stat-icon">▤</span></div>
+                    <div class="stat-value" id="totalCount">—</div>
+                    <div class="stat-note">All saved records</div>
+                </div>
+                <div class="stat-card" style="--glow:#42d9e8">
+                    <div class="stat-top"><span class="stat-label">Open Incidents</span><span class="stat-icon">◷</span></div>
+                    <div class="stat-value" id="openCount">—</div>
+                    <div class="stat-note">Awaiting resolution</div>
+                </div>
+                <div class="stat-card" style="--glow:#ff647c">
+                    <div class="stat-top"><span class="stat-label">High Severity</span><span class="stat-icon">⚠</span></div>
+                    <div class="stat-value" id="highCount">—</div>
+                    <div class="stat-note">High-priority incidents</div>
+                </div>
+                <div class="stat-card" style="--glow:#f7bd4a">
+                    <div class="stat-top"><span class="stat-label">Critical Severity</span><span class="stat-icon">✳</span></div>
+                    <div class="stat-value" id="criticalCount">—</div>
+                    <div class="stat-note">Require urgent review</div>
+                </div>
+                <div class="stat-card" style="--glow:#e5c94b">
+                    <div class="stat-top"><span class="stat-label">Medium Severity</span><span class="stat-icon">●</span></div>
+                    <div class="stat-value" id="mediumCount">—</div>
+                    <div class="stat-note">Moderate-risk incidents</div>
+                </div>
+                <div class="stat-card" style="--glow:#52d273">
+                    <div class="stat-top"><span class="stat-label">Low Severity</span><span class="stat-icon">●</span></div>
+                    <div class="stat-value" id="lowCount">—</div>
+                    <div class="stat-note">Lower-risk incidents</div>
+                </div>
+            </section>
+
+            <!-- New: Incident Risk Distribution -->
+            <section class="panel risk-chart-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Incident Risk Distribution</h3>
+                        <p>Breakdown of saved incidents by severity level.</p>
+                    </div>
+                    <span class="risk-chart-label">LIVE DATA</span>
+                </div>
+                <div class="risk-chart-body">
+                    <div class="risk-chart-container">
+                        <canvas id="severityChart" role="img"
+                                aria-label="Doughnut chart showing incidents by severity level"></canvas>
+                        <p id="chartFallback" class="risk-chart-fallback" hidden>
+                            The chart library could not load. Check your internet connection and refresh.
+                        </p>
+                    </div>
+                    <div class="risk-chart-summary" id="riskChartSummary" aria-live="polite">
+                        <div class="risk-summary-item"><span class="risk-summary-label"><span class="risk-legend-dot" style="background:#ef4444"></span>Critical</span><span class="risk-summary-value" id="chartCriticalCount">—</span></div>
+                        <div class="risk-summary-item"><span class="risk-summary-label"><span class="risk-legend-dot" style="background:#f97316"></span>High</span><span class="risk-summary-value" id="chartHighCount">—</span></div>
+                        <div class="risk-summary-item"><span class="risk-summary-label"><span class="risk-legend-dot" style="background:#eab308"></span>Medium</span><span class="risk-summary-value" id="chartMediumCount">—</span></div>
+                        <div class="risk-summary-item"><span class="risk-summary-label"><span class="risk-legend-dot" style="background:#22c55e"></span>Low</span><span class="risk-summary-value" id="chartLowCount">—</span></div>
+                        <div class="risk-summary-item"><span class="risk-summary-label"><span class="risk-legend-dot" style="background:#64748b"></span>Unknown</span><span class="risk-summary-value" id="chartUnknownCount">—</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel form-panel" id="formPanel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Submit a Security Incident</h3>
+                        <p>Gemini AI will analyze the details you provide.</p>
+                    </div>
+                </div>
+
+                <form id="incidentForm">
+                    <div class="form-grid">
+                        <div class="field full">
+                            <label for="title">Incident Title *</label>
+                            <input class="form-control" id="title" name="title" maxlength="200" required
+                                   placeholder="e.g. Suspicious Login Activity">
+                        </div>
+                        <div class="field full">
+                            <label for="description">Incident Description *</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      maxlength="10000" required
+                                      placeholder="Describe what happened, including relevant times, events, and evidence."></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="source_ip">Source IP Address (optional)</label>
+                            <input class="form-control" id="source_ip" name="source_ip" maxlength="45"
+                                   placeholder="e.g. 192.168.1.50">
+                        </div>
+                    </div>
+
+                    <p class="notice" id="formMessage">
+                        Please do not enter passwords, API keys, or other secrets.
+                    </p>
+                    <div class="form-actions">
+                        <button class="secondary-btn" id="cancelFormBtn" type="button">Cancel</button>
+                        <button class="primary-btn" id="submitBtn" type="submit">Analyze Incident →</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Incident Intelligence</h3>
+                        <p>Search and filter saved security incidents.</p>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <div class="search-box">
+                        <input type="search" id="searchInput"
+                               placeholder="⌕  Search title, attack type, or IP...">
+                    </div>
+                    <select id="severityFilter" aria-label="Filter by severity">
+                        <option value="">All Severities</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                        <option value="Unknown">Unknown</option>
+                    </select>
+                    <select id="statusFilter" aria-label="Filter by status">
+                        <option value="">All Statuses</option>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Incident</th><th>Attack Type</th>
+                                <th>Severity</th><th>Source IP</th><th>Status</th><th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidentList"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="emptyState" hidden>No matching incidents found.</div>
+            </section>
+
+            <footer>CyberShield · AI-assisted defensive security · Human review required</footer>
+        </div>
+    </main>
+</div>
+
+<div class="modal-backdrop" id="detailBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <div class="modal-header">
+            <div>
+                <h3 id="detailTitle">Incident Details</h3>
+                <p id="detailSubtitle"></p>
+            </div>
+            <button class="close-btn" id="closeDetailBtn" type="button" aria-label="Close details">×</button>
+        </div>
+        <div class="detail-content" id="detailContent"></div>
+    </section>
+</div>
+
+<script>
+    let allIncidents = [];
+    let severityChart = null;
+
+    const incidentList = document.getElementById("incidentList");
+    const emptyState = document.getElementById("emptyState");
+    const formPanel = document.getElementById("formPanel");
+    const incidentForm = document.getElementById("incidentForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const formMessage = document.getElementById("formMessage");
+
+    function makeCell(value, className) {
+        const cell = document.createElement("td");
+        cell.textContent = value ?? "Not provided";
+        if (className) cell.className = className;
+        return cell;
+    }
+
+    function makeBadge(value, allowedValues) {
+        const badge = document.createElement("span");
+        const normalized = String(value || "Unknown");
+        const className = allowedValues.includes(normalized.toLowerCase())
+            ? normalized.toLowerCase()
+            : "unknown";
+        badge.className = "badge " + className;
+        badge.textContent = normalized;
+        return badge;
+    }
+
+    function getSeverityCounts() {
+        const severities = ["Critical", "High", "Medium", "Low", "Unknown"];
+        const counts = {};
+
+        for (const severity of severities) {
+            counts[severity] = allIncidents.filter(incident => {
+                const value = String(incident.severity || "Unknown").trim().toLowerCase();
+                return severity === "Unknown"
+                    ? !["critical", "high", "medium", "low"].includes(value)
+                    : value === severity.toLowerCase();
+            }).length;
+        }
+
+        return { severities, counts };
+    }
+
+    function updateSeverityChart() {
+        const canvas = document.getElementById("severityChart");
+        const fallback = document.getElementById("chartFallback");
+        const summaryIds = {
+            Critical: "chartCriticalCount",
+            High: "chartHighCount",
+            Medium: "chartMediumCount",
+            Low: "chartLowCount",
+            Unknown: "chartUnknownCount"
+        };
+        const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#64748b"];
+        const { severities, counts } = getSeverityCounts();
+
+        for (const severity of severities) {
+            document.getElementById(summaryIds[severity]).textContent = counts[severity];
+        }
+
+        if (typeof Chart === "undefined") {
+            if (fallback) fallback.hidden = false;
+            return;
+        }
+
+        if (fallback) fallback.hidden = true;
+
+        const data = severities.map(severity => counts[severity]);
+
+        if (severityChart) {
+            severityChart.data.datasets[0].data = data;
+            severityChart.update();
+            return;
+        }
+
+        severityChart = new Chart(canvas, {
+            type: "doughnut",
+            data: {
+                labels: severities,
+                datasets: [{
+                    data,
+                    backgroundColor: colors,
+                    borderColor: "#111b2d",
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "68%",
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: "#cbd5e1",
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: "circle"
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label(context) {
+                                return ` ${context.label}: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    async function loadIncidents() {
+        const refreshBtn = document.getElementById("refreshBtn");
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = "Loading...";
+
+        try {
+            const response = await fetch("/api/incidents");
+            if (!response.ok) throw new Error("The incident API returned an error.");
+
+            const incidents = await response.json();
+            if (!Array.isArray(incidents)) throw new Error("Unexpected incident data.");
+
+            allIncidents = incidents;
+            updateStatistics();
+            renderIncidents();
+        } catch (error) {
+            console.error(error);
+            incidentList.replaceChildren();
+            emptyState.hidden = false;
+            emptyState.textContent =
+                "Unable to load incidents. Check that the Flask server is running.";
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = "↻ Refresh";
+        }
+    }
+
+    function updateStatistics() {
+        document.getElementById("totalCount").textContent = allIncidents.length;
+        document.getElementById("openCount").textContent =
+            allIncidents.filter(i => i.status === "Open").length;
+        document.getElementById("highCount").textContent =
+            allIncidents.filter(i => i.severity === "High").length;
+        document.getElementById("criticalCount").textContent =
+            allIncidents.filter(i => i.severity === "Critical").length;
+        document.getElementById("mediumCount").textContent =
+            allIncidents.filter(i => i.severity === "Medium").length;
+        document.getElementById("lowCount").textContent =
+            allIncidents.filter(i => i.severity === "Low").length;
+
+        updateSeverityChart();
+    }
+
+    function renderIncidents() {
+        const search = document.getElementById("searchInput").value.trim().toLowerCase();
+        const severity = document.getElementById("severityFilter").value;
+        const status = document.getElementById("statusFilter").value;
+
+        const filtered = allIncidents.filter(incident => {
+            const searchable = [
+                incident.title, incident.attack_type, incident.source_ip,
+                incident.description, incident.id
+            ].join(" ").toLowerCase();
+
+            return searchable.includes(search)
+                && (!severity || (incident.severity || "Unknown") === severity)
+                && (!status || (incident.status || "Unknown") === status);
+        });
+
+        incidentList.replaceChildren();
+
+        for (const incident of filtered) {
+            const row = document.createElement("tr");
+            row.appendChild(makeCell("#" + incident.id, "incident-id"));
+            row.appendChild(makeCell(incident.title || "Untitled", "incident-title"));
+            row.appendChild(makeCell(incident.attack_type || "Not analyzed"));
+
+            const severityCell = document.createElement("td");
+            severityCell.appendChild(makeBadge(
+                incident.severity || "Unknown", ["low", "medium", "high", "critical"]
+            ));
+            row.appendChild(severityCell);
+            row.appendChild(makeCell(incident.source_ip || "—"));
+
+            const statusCell = document.createElement("td");
+            statusCell.appendChild(makeBadge(incident.status || "Unknown", ["open", "closed"]));
+            row.appendChild(statusCell);
+
+            const actionCell = document.createElement("td");
+
+            const viewButton = document.createElement("button");
+            viewButton.className = "view-btn";
+            viewButton.type = "button";
+            viewButton.textContent = "View →";
+            viewButton.addEventListener("click", () => showDetails(incident));
+            actionCell.appendChild(viewButton);
+
+            const editButton = document.createElement("button");
+            editButton.className = "view-btn";
+            editButton.type = "button";
+            editButton.textContent = "Edit";
+            editButton.style.marginLeft = "8px";
+
+            editButton.addEventListener("click", async () => {
+                const newTitle = prompt("Edit incident title:", incident.title || "");
+                if (newTitle === null) return;
+
+                const newDescription = prompt(
+                    "Edit incident description:", incident.description || ""
+                );
+                if (newDescription === null) return;
+
+                const newSourceIP = prompt("Edit source IP:", incident.source_ip || "");
+                if (newSourceIP === null) return;
+
+                if (!newTitle.trim() || !newDescription.trim()) {
+                    alert("Title and description cannot be empty.");
+                    return;
+                }
+
+                editButton.disabled = true;
+                editButton.textContent = "Saving...";
+
+                try {
+                    const response = await fetch(`/api/incidents/${incident.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            title: newTitle.trim(),
+                            description: newDescription.trim(),
+                            source_ip: newSourceIP.trim()
+                        })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.error || "Could not update incident.");
+                    }
+                    await loadIncidents();
+                    alert("Incident updated successfully.");
+                } catch (error) {
+                    alert(error.message);
+                    editButton.disabled = false;
+                    editButton.textContent = "Edit";
+                }
+            });
+
+            actionCell.appendChild(editButton);
+
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "view-btn";
+            deleteButton.type = "button";
+            deleteButton.textContent = "Delete";
+            deleteButton.style.marginLeft = "8px";
+            deleteButton.style.color = "#ff8497";
+            deleteButton.style.borderColor = "#704050";
+
+            deleteButton.addEventListener("click", async () => {
+                const confirmed = confirm(
+                    `Are you sure you want to permanently delete incident #${incident.id}?\n\n${incident.title || "Untitled Incident"}`
+                );
+                if (!confirmed) return;
+
+                deleteButton.disabled = true;
+                deleteButton.textContent = "Deleting...";
+
+                try {
+                    const response = await fetch(`/api/incidents/${incident.id}`, {
+                        method: "DELETE"
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.error || "Could not delete incident.");
+                    }
+                    await loadIncidents();
+                } catch (error) {
+                    alert(error.message);
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = "Delete";
+                }
+            });
+
+            actionCell.appendChild(deleteButton);
+            row.appendChild(actionCell);
+            incidentList.appendChild(row);
+        }
+
+        emptyState.hidden = filtered.length !== 0;
+        emptyState.textContent = allIncidents.length === 0
+            ? "No incidents have been recorded yet. Select New Incident to get started."
+            : "No matching incidents found.";
+    }
+
+    function addDetailBlock(container, heading, value) {
+        const block = document.createElement("section");
+        block.className = "detail-block";
+
+        const title = document.createElement("h4");
+        title.textContent = heading;
+        block.appendChild(title);
+
+        const paragraph = document.createElement("p");
+        paragraph.textContent = value || "No information available.";
+        block.appendChild(paragraph);
+        container.appendChild(block);
+    }
+
+    function showDetails(incident) {
+        document.getElementById("detailTitle").textContent =
+            incident.title || "Untitled Incident";
+        document.getElementById("detailSubtitle").textContent =
+            "Incident #" + incident.id + " · " + (incident.created_at || "Date unavailable");
+
+        const content = document.getElementById("detailContent");
+        content.replaceChildren();
+
+        addDetailBlock(
+            content,
+            "Severity",
+            (incident.severity || "Unknown") + " · Confidence: " +
+            (Number.isFinite(Number(incident.confidence))
+                ? Math.round(Number(incident.confidence) * 100) + "%"
+                : "Unavailable")
+        );
+        addDetailBlock(content, "Attack Type", incident.attack_type);
+        addDetailBlock(content, "Source IP", incident.source_ip);
+        addDetailBlock(content, "Incident Description", incident.description);
+        addDetailBlock(content, "AI Analysis", incident.ai_analysis);
+
+        const recommendationBlock = document.createElement("section");
+        recommendationBlock.className = "detail-block";
+        const heading = document.createElement("h4");
+        heading.textContent = "Recommendations";
+        recommendationBlock.appendChild(heading);
+
+        const recommendations = document.createElement("ul");
+        const items = String(incident.recommendations || "")
+            .split("\n").filter(item => item.trim());
+
+        for (const item of items) {
+            const li = document.createElement("li");
+            li.textContent = item;
+            recommendations.appendChild(li);
+        }
+        if (items.length === 0) {
+            const li = document.createElement("li");
+            li.textContent = "No recommendations available.";
+            recommendations.appendChild(li);
+        }
+        recommendationBlock.appendChild(recommendations);
+        content.appendChild(recommendationBlock);
+
+        const statusBlock = document.createElement("section");
+        statusBlock.className = "detail-block";
+        const statusHeading = document.createElement("h4");
+        statusHeading.textContent = "Incident Status";
+        statusBlock.appendChild(statusHeading);
+
+        const statusButton = document.createElement("button");
+        statusButton.type = "button";
+        statusButton.className = "view-btn";
+        statusButton.textContent =
+            incident.status === "Closed" ? "Reopen Incident" : "Close Incident";
+
+        statusButton.addEventListener("click", async () => {
+            const newStatus = incident.status === "Closed" ? "Open" : "Closed";
+            statusButton.disabled = true;
+            statusButton.textContent = "Updating...";
+
+            try {
+                const response = await fetch(`/api/incidents/${incident.id}/status`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || "Failed to update status.");
+                }
+                incident.status = result.status;
+                await loadIncidents();
+                showDetails(incident);
+            } catch (error) {
+                alert(error.message);
+                statusButton.disabled = false;
+                statusButton.textContent =
+                    incident.status === "Closed" ? "Reopen Incident" : "Close Incident";
+            }
+        });
+
+        statusBlock.appendChild(statusButton);
+        content.appendChild(statusBlock);
+        document.getElementById("detailBackdrop").classList.add("visible");
+        document.getElementById("closeDetailBtn").focus();
+    }
+
+    function closeDetails() {
+        document.getElementById("detailBackdrop").classList.remove("visible");
+    }
+
+    document.getElementById("showFormBtn").addEventListener("click", () => {
+        formPanel.classList.add("visible");
+        document.getElementById("title").focus();
+        formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.getElementById("cancelFormBtn").addEventListener("click", () => {
+        formPanel.classList.remove("visible");
+        incidentForm.reset();
+        formMessage.className = "notice";
+        formMessage.textContent =
+            "Please do not enter passwords, API keys, or other secrets.";
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", loadIncidents);
+    document.getElementById("searchInput").addEventListener("input", renderIncidents);
+    document.getElementById("severityFilter").addEventListener("change", renderIncidents);
+    document.getElementById("statusFilter").addEventListener("change", renderIncidents);
+    document.getElementById("closeDetailBtn").addEventListener("click", closeDetails);
+
+    document.getElementById("detailBackdrop").addEventListener("click", event => {
+        if (event.target.id === "detailBackdrop") closeDetails();
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeDetails();
+    });
+
+    incidentForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const title = document.getElementById("title").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const source_ip = document.getElementById("source_ip").value.trim();
+
+        if (!title || !description) {
+            formMessage.className = "notice error";
+            formMessage.textContent = "Please enter both a title and description.";
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Analyzing with AI...";
+        formMessage.className = "notice";
+        formMessage.textContent =
+            "Submitting the incident. AI analysis may take a little time.";
+
+        try {
+            const response = await fetch("/api/incidents", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, description, source_ip })
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Incident submission failed.");
+            }
+
+            incidentForm.reset();
+            await loadIncidents();
+
+            if (result.analysis?.attack_type !== "Analysis unavailable") {
+                formMessage.className = "notice success";
+                formMessage.textContent =
+                    "Incident #" + result.incident_id +
+                    " saved and analyzed. You can view the result in the table.";
+            } else {
+                formMessage.className = "notice error";
+                formMessage.textContent =
+                    "Incident saved, but AI analysis was unavailable. Check the server terminal.";
+            }
+        } catch (error) {
+            formMessage.className = "notice error";
+            formMessage.textContent =
+                error.message || "Something went wrong. Please try again.";
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Analyze Incident →";
+        }
+    });
+
+    // Load saved incidents when the dashboard opens.
+    loadIncidents();
+</script>
+
+</body>
+</html>
